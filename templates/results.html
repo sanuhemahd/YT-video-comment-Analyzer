@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Insights - YouTube Analysis</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
+    <style>
+        :root {
+            --primary-blue: #0b1995;
+            --accent-gradient: linear-gradient(135deg, #0b1995 0%, #3b4ad0 100%);
+            --glass: rgba(255, 255, 255, 0.95);
+        }
+        body { background-color: #f4f7f6; font-family: 'Inter', sans-serif; overflow-x: hidden; }
+        .glass-card {
+            background: var(--glass);
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.3);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            margin-bottom: 24px;
+        }
+        .hero-header {
+            background: var(--accent-gradient);
+            color: white;
+            padding: 60px 0;
+            border-radius: 0 0 40px 40px;
+            margin-bottom: -40px;
+        }
+        .orbit-container { position: relative; width: 300px; margin: 0 auto; }
+        .orbit-emoji {
+            position: absolute;
+            top: 55%; left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 3.5rem;
+        }
+        .keyword-pill {
+            padding: 10px 20px;
+            border-radius: 50px;
+            color: white;
+            font-weight: 500;
+            display: inline-block;
+            transition: 0.3s;
+        }
+        .wordcloud-img { width: 100%; border-radius: 20px; }
+        .comment-box {
+            padding: 20px; border-radius: 15px; background: #f9f9f9;
+            border-left: 6px solid #ddd;
+        }
+        .positive-border { border-left-color: #2ecc71; }
+        .negative-border { border-left-color: #e74c3c; }
+    </style>
+</head>
+<body>
+
+    <div id="report-content">
+        <div class="hero-header text-center animate__animated animate__fadeInDown">
+            <div class="container">
+                <h1 class="display-4 fw-bold">Video Intelligence Report</h1>
+                <p class="lead opacity-75">{{ results.video_title }}</p>
+                <div class="d-flex justify-content-center gap-3 mt-4 no-print">
+                    <a href="/" class="btn btn-light rounded-pill px-4">New Analysis</a>
+                    <button onclick="downloadReport()" class="btn btn-warning rounded-pill px-4 fw-bold">Download Report</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="container mt-5">
+            <div class="card glass-card p-4 animate__animated animate__zoomIn">
+                <h4 class="fw-bold mb-4 text-primary">Visual Topic Extraction</h4>
+                <img src="data:image/png;base64,{{ results.wordcloud }}" class="wordcloud-img">
+            </div>
+
+            <div class="row g-4">
+                <div class="col-md-5 animate__animated animate__fadeInLeft">
+                    <div class="card glass-card p-4 h-100 text-center">
+                        <h4 class="fw-bold mb-4">Sentiment Orbit</h4>
+                        <div class="orbit-container">
+                            <canvas id="sentimentChart"></canvas>
+                            <div class="orbit-emoji">{{ results.sentiment_emoji }}</div>
+                        </div>
+                        <h3 class="mt-4 fw-bold">{{ results.sentiment_result }}</h3>
+                    </div>
+                </div>
+
+                <div class="col-md-7 animate__animated animate__fadeInRight">
+                    <div class="card glass-card p-4 mb-4">
+                        <h4 class="fw-bold mb-3">Keyword Heatmap</h4>
+                        <div class="d-flex flex-wrap gap-2">
+                            {% for word, count in results.top_keywords %}
+                                {% set intensity = (count / results.max_keyword_count * 0.7 + 0.3) %}
+                                <div class="keyword-pill shadow-sm" style="background-color: rgba(11, 25, 149, {{ intensity }})">
+                                    {{ word }} <small class="opacity-75">({{ count }})</small>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="card glass-card p-4">
+                        <h4 class="fw-bold mb-3">Key Performance Indicators</h4>
+                        <div class="row text-center">
+                            <div class="col-4 border-end">
+                                <h2 class="fw-bold text-primary">{{ results.comments_analyzed }}</h2>
+                                <p class="text-muted small mb-0">Analyzed</p>
+                            </div>
+                            <div class="col-4 border-end">
+                                <h2 class="fw-bold text-success">{{ results.positive_count }}</h2>
+                                <p class="text-muted small mb-0">Positives</p>
+                            </div>
+                            <div class="col-4">
+                                <h2 class="fw-bold text-danger">{{ results.negative_count }}</h2>
+                                <p class="text-muted small mb-0">Negatives</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card glass-card p-4 animate__animated animate__fadeInUp">
+                <h4 class="fw-bold mb-4">Notable Viewer Feedback</h4>
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <p class="text-success fw-bold mb-2">High Impact Positive</p>
+                        <div class="comment-box positive-border">"{{ results.most_positive_comment }}"</div>
+                    </div>
+                    <div class="col-md-6">
+                        <p class="text-danger fw-bold mb-2">Critical Awareness Needed</p>
+                        <div class="comment-box negative-border">"{{ results.most_negative_comment }}"</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 1. Sentiment Orbit Chart
+        const ctx = document.getElementById('sentimentChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Positive', 'Negative', 'Neutral'],
+                datasets: [{
+                    data: [{{ results.positive_count }}, {{ results.negative_count }}, {{ results.neutral_count }}],
+                    backgroundColor: ['#2ecc71', '#e74c3c', '#95a5a6'],
+                    borderWidth: 0,
+                    cutout: '80%'
+                }]
+            },
+            options: {
+                plugins: { legend: { display: false } },
+                animation: { animateRotate: true, duration: 2000 }
+            }
+        });
+
+        // 2. Download Report Logic
+        function downloadReport() {
+            const element = document.getElementById('report-content');
+            const opt = {
+                margin: 0.5,
+                filename: 'YouTube_Analysis_Report.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+            };
+            html2pdf().set(opt).from(element).save();
+        }
+    </script>
+</body>
+</html>
