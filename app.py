@@ -13,7 +13,7 @@ import json
 import html
 
 # Set your YouTube API key here
-API_KEY = 'AIzaSyDAYBLKIjN1QzVoL0lf3fOgWG8iDpuJlyg' 
+API_KEY = 'YOUR_API_KEY_HERE' 
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
