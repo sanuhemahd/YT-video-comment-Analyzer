@@ -5,7 +5,11 @@ This tool performs deep sentiment analysis on YouTube video comments, categorizi
 ![ YouTube Video Comment Analyser Tool ](Images/Index.png)
 
 ## 🎥 Demo
-Here's a quick demo of the " 
+Here's a quick demo of the tool.
+
+
+https://github.com/user-attachments/assets/3ba068c8-c566-4e0a-beca-9d5e6c0ba26b
+
 
 ## ✨ Key Features (Section Title - H2)
 
